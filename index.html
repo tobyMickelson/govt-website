@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Gerrymandering Simulator</title>
+	<meta charset="utf-8">
+	<style>
+		body {
+			margin: 1rem;
+		}
+
+		h1,
+		h2 {
+			text-align: center
+		}
+
+		table.map {
+			margin: auto;
+			padding: 1rem 2rem;
+		}
+
+		tr.row {
+			margin: 0;
+			padding: 0;
+		}
+
+		td.cell {
+			min-width: 2rem;
+			max-width: 6rem;
+			height: 3rem;
+			margin: 0;
+			border-style: solid;
+			box-sizing: border-box;
+			font-size: 2rem;
+			text-align: center;
+		}
+
+		td.red {
+			background-color: salmon;
+		}
+
+		td.orange {
+			background-color: orange;
+		}
+
+		td.yellow {
+			background-color: gold;
+		}
+
+		td.green {
+			background-color: mediumaquamarine;
+		}
+
+		td.blue {
+			background-color: deepskyblue;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Gerrymandering Simulator - See how to make your vote <i><u>not</u></i>
+		count!</h1>
+	<hr>
+	<h2>Create x districts of y people each so that orange has more representation</h2>
+	<table class="map" cellspacing="0" cellpadding="0">
+	</table>
+	<script>
+		const width = 5;
+		const height = 4;
+
+		function rcts(row, column) { /* row column to string */
+			return row.toString() + '.' + column.toString();
+		}
+
+		function get_color(cell) {
+			if (cell.classList.contains('red'))
+				return 'red';
+			if (cell.classList.contains('orange'))
+				return 'orange';
+			if (cell.classList.contains('yellow'))
+				return 'yellow';
+			if (cell.classList.contains('green'))
+				return 'green';
+			if (cell.classList.contains('blue'))
+				return 'blue';
+			return null
+		}
+
+		function update_borders() {
+			for (let row = 0; row < height; row++) {
+				for (let column = 0; column < width; column++) {
+					cell = document.getElementById(rcts(row, column));
+					if (row == 0) {
+						cell.style.borderTopWidth = '3px';
+					}
+					if (row == height - 1) {
+						cell.style.borderBottomWidth = '3px';
+					}
+					if (column == 0) {
+						cell.style.borderLeftWidth = '3px';
+					}
+					if (column == width - 1) {
+						cell.style.borderRightWidth = '3px';
+					}
+					const color = get_color(cell);
+					if (row != 0) {
+						if (color == get_color(document.getElementById(rcts(row - 1, column))))
+							cell.style.borderTopWidth = '0.25px';
+						else
+							cell.style.borderTopWidth = '1.5px';
+					}
+					if (row != height - 1) {
+						if (color == get_color(document.getElementById(rcts(row + 1, column))))
+							cell.style.borderBottomWidth = '0.25px';
+						else
+							cell.style.borderBottomWidth = '1.5px';
+					}
+					if (column !== 0) {
+						if (color == get_color(document.getElementById(rcts(row, column - 1))))
+							cell.style.borderLeftWidth = '0.25px';
+						else
+							cell.style.borderLeftWidth = '1.5px';
+					}
+					if (column != width - 1) {
+						if (color == get_color(document.getElementById(rcts(row, column + 1))))
+							cell.style.borderRightWidth = '0.25px';
+						else
+							cell.style.borderRightWidth = '1.5px';
+					}
+				}
+			}
+		}
+
+		function toggle(row, column) {
+			const id = rcts(row, column);
+			const cell = document.getElementById(id);
+			if (cell.classList.contains('red')) {
+				cell.classList.add('orange');
+				cell.classList.remove('red');
+			} else if (cell.classList.contains('orange')) {
+				cell.classList.add('yellow');
+				cell.classList.remove('orange');
+			} else if (cell.classList.contains('yellow')) {
+				cell.classList.add('green');
+				cell.classList.remove('yellow');
+			} else if (cell.classList.contains('green')) {
+				cell.classList.add('blue');
+				cell.classList.remove('green');
+			} else if (cell.classList.contains('blue')) {
+				cell.classList.add('red');
+				cell.classList.remove('blue');
+			}
+			update_borders();
+		}
+
+		function gen_toggle(row, column) {
+			return function () {
+				toggle(row, column);
+			};
+		}
+
+		const style = document.documentElement.style;
+		const table = document.querySelector('table.map');
+		for (let row = 0; row < height; row++) {
+			const row_ = table.insertRow(-1);
+			for (let column = 0; column < width; column++) {
+				const cell = row_.insertCell(-1)
+				cell.classList.add('cell');
+				cell.classList.add(['red', 'orange', 'yellow', 'green', 'blue'][Math.floor(Math.random() * 5)]);
+				cell.id = rcts(row, column);
+				cell.onclick = gen_toggle(row, column);
+				cell.style.width = (100.0 / width).toString() + 'vw';
+				cell.textContent = Math.random() < 0.5 ? '🐱' : '🐶'
+			}
+		}
+		update_borders();
+	</script>
+</body>
+
+</html>
