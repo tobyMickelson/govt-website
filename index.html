@@ -10,8 +10,23 @@
 		}
 
 		h1,
-		h2 {
+		h2,
+		span {
 			text-align: center
+		}
+
+		div.district {
+			font-size: 1.5rem;
+			font-weight: bold;
+			margin: auto;
+			padding: 1rem 2rem;
+			text-align: center;
+		}
+
+		button {
+			font-size: 1rem;
+			font-weight: bold;
+			padding: 0.25rem
 		}
 
 		table.map {
@@ -25,33 +40,33 @@
 		}
 
 		td.cell {
-			min-width: 2rem;
-			max-width: 6rem;
-			height: 3rem;
-			margin: 0;
 			border-style: solid;
 			box-sizing: border-box;
 			font-size: 2rem;
+			height: 3rem;
+			margin: 0;
+			max-width: 6rem;
+			min-width: 2rem;
 			text-align: center;
 		}
 
-		td.red {
+		.red {
 			background-color: salmon;
 		}
 
-		td.orange {
+		.orange {
 			background-color: orange;
 		}
 
-		td.yellow {
+		.yellow {
 			background-color: gold;
 		}
 
-		td.green {
+		.green {
 			background-color: mediumaquamarine;
 		}
 
-		td.blue {
+		.blue {
 			background-color: deepskyblue;
 		}
 	</style>
@@ -61,12 +76,32 @@
 	<h1>Gerrymandering Simulator - See how to make your vote <i><u>not</u></i>
 		count!</h1>
 	<hr>
-	<h2>Create x districts of y people each so that orange has more representation</h2>
-	<table class="map" cellspacing="0" cellpadding="0">
+	<h2>Create 5 districts of 5 people each so that cats have the most possible represesntation</h2>
+	<span>Popular:&nbsp;<span id="popular"></span></span><br>
+	<span>Gerrymandered:&nbsp;<span id="gerrymandered"></span></span><br>
+	<div class="district">
+		<span>Pick district: </span><span id="district_label">red</span><br>
+		<tr class="row">
+			<button class="red" onclick="set_global_color('red')">red</button>
+			<button class="orange" onclick="set_global_color('orange')">orange</button>
+			<button class="yellow" onclick="set_global_color('yellow')">yellow</button>
+			<button class="green" onclick="set_global_color('green')">green</button>
+			<button class="blue" onclick="set_global_color('blue')">blue</button>
+		</tr>
+	</div>
+	<table class=" map" cellspacing="0" cellpadding="0">
 	</table>
 	<script>
 		const width = 5;
-		const height = 4;
+		const height = 5;
+		let color = 'red';
+		let color_array = [];
+		let valid = false;
+
+		function set_global_color(color_) {
+			color = color_;
+			document.getElementById('district_label').textContent = color_;
+		}
 
 		function rcts(row, column) { /* row column to string */
 			return row.toString() + '.' + column.toString();
@@ -83,10 +118,11 @@
 				return 'green';
 			if (cell.classList.contains('blue'))
 				return 'blue';
-			return null
+			return null;
 		}
 
 		function update_borders() {
+			count_colors();
 			for (let row = 0; row < height; row++) {
 				for (let column = 0; column < width; column++) {
 					cell = document.getElementById(rcts(row, column));
@@ -131,36 +167,89 @@
 			}
 		}
 
-		function toggle(row, column) {
-			const id = rcts(row, column);
-			const cell = document.getElementById(id);
-			if (cell.classList.contains('red')) {
-				cell.classList.add('orange');
-				cell.classList.remove('red');
-			} else if (cell.classList.contains('orange')) {
-				cell.classList.add('yellow');
-				cell.classList.remove('orange');
-			} else if (cell.classList.contains('yellow')) {
-				cell.classList.add('green');
-				cell.classList.remove('yellow');
-			} else if (cell.classList.contains('green')) {
-				cell.classList.add('blue');
-				cell.classList.remove('green');
-			} else if (cell.classList.contains('blue')) {
-				cell.classList.add('red');
-				cell.classList.remove('blue');
+		function count_colors() {
+			color_array = [];
+			for (let row = 0; row < height; row++) {
+				color_array.push([]);
+				for (let column = 0; column < width; column++) {
+					cell = document.getElementById(rcts(row, column));
+					color_array[row].push(get_color(cell));
+				}
 			}
-			update_borders();
+			let blob_count = []
+			for (let row = 0; row < height; row++) {
+				blob_count.push([]);
+				for (let column = 0; column < width; column++) {
+					blob_count[row].push(count_color_array(row, column, color_array[row][column]));
+				}
+			}
+			let temp = blob_count[0][0]
+			valid = true;
+			for (let row = 0; row < height; row++) {
+				for (let column = 0; column < width; column++) {
+					if (blob_count[row][column] != temp) {
+						valid = false;
+					}
+				}
+			}
+			if (!valid) {
+				document.getElementById("gerrymandered").textContent = "Please create valid districts";
+			} else {
+				let sum = 0;
+				for (const color_ of ["red", "orange", "yellow", "green", "blue"]) {
+					let sum_ = 0;
+					for (let row = 0; row < height; row++) {
+						for (let column = 0; column < width; column++) {
+							cell = document.getElementById(rcts(row, column));
+							if (color_ == get_color(cell) && cell.textContent == '🐱') sum_ += 1;
+						}
+					}
+					if (sum_ / (height * width / 5) > 0.5)
+						sum += 1;
+				}
+				document.getElementById("gerrymandered").textContent = Math.floor(sum / 5 * 100).toString() + "%";
+			}
 		}
 
-		function gen_toggle(row, column) {
+		function count_color_array(row, column, color) {
+			if (row < 0 || column < 0 || row >= height || column >= width) return 0;
+			if (color_array[row][column] != color) return 0;
+			color_array[row][column] = color + '_';
+			let sum = 1;
+			sum += count_color_array(row + 1, column, color);
+			sum += count_color_array(row - 1, column, color);
+			sum += count_color_array(row, column + 1, color);
+			sum += count_color_array(row, column - 1, color);
+			return sum;
+		}
+
+		function set_color(row, column) {
+			const id = rcts(row, column);
+			const cell = document.getElementById(id);
+			if (cell.classList.contains('red'))
+				cell.classList.remove('red');
+			else if (cell.classList.contains('orange'))
+				cell.classList.remove('orange');
+			else if (cell.classList.contains('yellow'))
+				cell.classList.remove('yellow');
+			else if (cell.classList.contains('green'))
+				cell.classList.remove('green');
+			else if (cell.classList.contains('blue'))
+				cell.classList.remove('blue');
+			cell.classList.add(color)
+			update_borders(color);
+		}
+
+		function gen_set_color(row, column) {
 			return function () {
-				toggle(row, column);
+				set_color(row, column);
 			};
 		}
 
 		const style = document.documentElement.style;
 		const table = document.querySelector('table.map');
+		let num_cats = 0;
+		let num_dogs = 0;
 		for (let row = 0; row < height; row++) {
 			const row_ = table.insertRow(-1);
 			for (let column = 0; column < width; column++) {
@@ -168,11 +257,18 @@
 				cell.classList.add('cell');
 				cell.classList.add(['red', 'orange', 'yellow', 'green', 'blue'][Math.floor(Math.random() * 5)]);
 				cell.id = rcts(row, column);
-				cell.onclick = gen_toggle(row, column);
+				cell.onclick = gen_set_color(row, column);
 				cell.style.width = (100.0 / width).toString() + 'vw';
-				cell.textContent = Math.random() < 0.5 ? '🐱' : '🐶'
+				if (Math.random() < 0.5) {
+					cell.textContent = '🐱';
+					num_cats += 1;
+				} else {
+					cell.textContent = '🐶';
+					num_dogs += 1;
+				}
 			}
 		}
+		document.getElementById("popular").textContent = Math.floor((num_cats / (num_cats + num_dogs)) * 100) + "%";
 		update_borders();
 	</script>
 </body>
