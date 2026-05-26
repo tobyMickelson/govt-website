@@ -14,6 +14,10 @@
 			min-height: 100vh;
 		}
 
+		div.left {
+			text-align: left;
+		}
+
 		button {
 			font-size: 1rem;
 			font-weight: bold;
@@ -70,7 +74,8 @@
 		<hr>
 		<h2>Create 5 districts of 5 people each so that cats have the most possible represesntation</h2>
 		<p>Select a district color then click on one or more cells to change their district. Districts must be continous and
-			cannot contain diagonal connections</p>
+			cannot contain diagonal connections.<br>Once satisfied, click randomize again to researt. Please note that puzzles
+			are randomly generated and may not be completable.</p>
 		<br>
 		<p><b>Popular:</b>&nbsp;<span id="popular"></span></p>
 		<p><b>Gerrymandered:</b>&nbsp;<span id="gerrymandered"></span></p>
@@ -82,14 +87,52 @@
 		<button class="green" onclick="set_global_color('green')">green</button>
 		<button class="blue" onclick="set_global_color('blue')">blue</button>
 		<br>
-		<table class=" map" cellspacing="0" cellpadding="0">
-		</table>
-		<p style="bottom:0.5rem;position:absolute;width:99%">Scroll Down for More Information!</p>
+		<table class=" map" cellspacing="0" cellpadding="0"></table>
+		<button onclick="window.location.reload();">Randomize Again!</button>
+		<h2>Scroll Down for More Information!</h2>
 	</div>
 	<hr>
-	<div class="page">
+	<div class="page left">
 		<h2>Gerrymandering Facts</h2>
+		<ul>
+			<li>Gerrymandering is the act of drawing districts that dilute the voting power of a group, either political or
+				ethnic.<sup>1</sup></li>
+			<li>The simplest ways to Gerrymander are through cracking and packing.<sup>2</sup></li>
+			<li>Cracking is where members of a certain voting group are split into different districts, where their vote may
+				be washed out by a different group holding a majority in that district.<sup>2</sup></li>
+			<li>Packing is where members of a certain voting group are pushed into a small number of districts where they hold
+				an overwhelming majority of votes, ensuring that they impact the smallest number of district
+				elections.<sup>2</sup></li>
+		</ul>
 		<h2>Combatting Gerrymandering</h2>
+		<ul>
+			<li>Gerrymandering may be combated by mandating independent districting commissions, which would ideally be
+				uninfluenced by either political party or, if that impossible, influenced by both political parties, ensuring
+				fairness.<sup>3</sup></li>
+			<li>Certain provisions in the “freedom to vote” act would establish strict, anti-gerrymandering laws, putting a
+				nationwide ban on gerrymandering. Something like this would be challenging, though not impossible, to
+				pass.<sup>4</sup></li>
+			<li>Vote thoughtfully and call your representatives!</li>
+		</ul>
+		<h2>Citations</h2>
+		<ol>
+			<li>Brian Duignan, &ldquo;Gerrymandering | Definition, Litigation, &#38; Facts,&rdquo; Britannica, May 26, 2026,
+				<a href="https://www.britannica.com/topic/gerrymandering">https://www.britannica.com/topic/gerrymandering</a>.
+			</li>
+			<li>Michael Li, &ldquo;Gerrymandering Explained,&rdquo; Brennan Center for Justice, August 10, 2021,
+				<a href="https://www.brennancenter.org/our-work/research-reports/gerrymandering-explained">
+					https://www.brennancenter.org/our-work/research-reports/gerrymandering-explained</a>.
+			</li>
+			<li>Madeleine Greenberg, &ldquo;How Can We Combat Gerrymandering?,&rdquo; Campaign Legal Center, August 7, 2025,
+				<a href="https://campaignlegal.org/update/how-can-we-combat-gerrymandering">
+					https://campaignlegal.org/update/how-can-we-combat-gerrymandering</a>.
+			</li>
+			<li>&ldquo;What the Freedom to Vote Act Would Do,&rdquo; Brennan Center for Justice, September 20, 2021,
+				<a href="https://www.brennancenter.org/our-work/research-reports/freedom-vote-act">
+					https://www.brennancenter.org/our-work/research-reports/freedom-vote-act</a>.
+			</li>
+		</ol>
+		<p>
 	</div>
 	<script>
 		const width = 5;
@@ -190,6 +233,7 @@
 					blob_count[row].push(count_color_array(row, column, color_array[row][column]));
 				}
 			}
+
 			let temp = blob_count[0][0]
 			valid = true;
 			for (let row = 0; row < height; row++) {
@@ -199,6 +243,22 @@
 					}
 				}
 			}
+			let num_in_districts = [];
+			for (const color_ of ['red', 'orange', 'yellow', 'green', 'blue']) {
+				let num = 0;
+				for (let row = 0; row < height; row++) {
+					for (let column = 0; column < width; column++) {
+						let cell = document.getElementById(rcts(row, column))
+						if (get_color(cell) == color_) num++;
+					}
+				}
+				num_in_districts.push(num);
+			}
+			let temp2 = num_in_districts[0];
+			for (const num of num_in_districts) {
+				if (num != temp2) valid = false;
+			}
+
 			if (!valid) {
 				document.getElementById('gerrymandered').textContent = 'Please create valid districts';
 			} else {
