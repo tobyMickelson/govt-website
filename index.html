@@ -7,20 +7,11 @@
 	<style>
 		body {
 			margin: 1rem;
-		}
-
-		h1,
-		h2,
-		span {
-			text-align: center
-		}
-
-		div.district {
-			font-size: 1.5rem;
-			font-weight: bold;
-			margin: auto;
-			padding: 1rem 2rem;
 			text-align: center;
+		}
+
+		div.page {
+			min-height: 100vh;
 		}
 
 		button {
@@ -73,24 +64,33 @@
 </head>
 
 <body>
-	<h1>Gerrymandering Simulator - See how to make your vote <i><u>not</u></i>
-		count!</h1>
-	<hr>
-	<h2>Create 5 districts of 5 people each so that cats have the most possible represesntation</h2>
-	<span>Popular:&nbsp;<span id="popular"></span></span><br>
-	<span>Gerrymandered:&nbsp;<span id="gerrymandered"></span></span><br>
-	<div class="district">
-		<span>Pick district: </span><span id="district_label">red</span><br>
-		<tr class="row">
-			<button class="red" onclick="set_global_color('red')">red</button>
-			<button class="orange" onclick="set_global_color('orange')">orange</button>
-			<button class="yellow" onclick="set_global_color('yellow')">yellow</button>
-			<button class="green" onclick="set_global_color('green')">green</button>
-			<button class="blue" onclick="set_global_color('blue')">blue</button>
-		</tr>
+	<div class="page">
+		<h1>Gerrymandering Simulator - See how to make your vote <i><u>not</u></i>
+			count!</h1>
+		<hr>
+		<h2>Create 5 districts of 5 people each so that cats have the most possible represesntation</h2>
+		<p>Select a district color then click on one or more cells to change their district. Districts must be continous and
+			cannot contain diagonal connections</p>
+		<br>
+		<p><b>Popular:</b>&nbsp;<span id="popular"></span></p>
+		<p><b>Gerrymandered:</b>&nbsp;<span id="gerrymandered"></span></p>
+		<br>
+		<h3>Current District: <span id="district_label"></span></h3>
+		<button class="red" onclick="set_global_color('red')">red</button>
+		<button class="orange" onclick="set_global_color('orange')">orange</button>
+		<button class="yellow" onclick="set_global_color('yellow')">yellow</button>
+		<button class="green" onclick="set_global_color('green')">green</button>
+		<button class="blue" onclick="set_global_color('blue')">blue</button>
+		<br>
+		<table class=" map" cellspacing="0" cellpadding="0">
+		</table>
+		<p style="bottom:0.5rem;position:absolute;width:99%">Scroll Down for More Information!</p>
 	</div>
-	<table class=" map" cellspacing="0" cellpadding="0">
-	</table>
+	<hr>
+	<div class="page">
+		<h2>Gerrymandering Facts</h2>
+		<h2>Combatting Gerrymandering</h2>
+	</div>
 	<script>
 		const width = 5;
 		const height = 5;
@@ -100,7 +100,14 @@
 
 		function set_global_color(color_) {
 			color = color_;
-			document.getElementById('district_label').textContent = color_;
+			let span = document.getElementById('district_label')
+			span.innerHTML = '&nbsp;' + color_ + '&nbsp;';
+			span.classList.remove('red');
+			span.classList.remove('orange');
+			span.classList.remove('yellow');
+			span.classList.remove('green');
+			span.classList.remove('blue');
+			span.classList.add(color_);
 		}
 
 		function rcts(row, column) { /* row column to string */
@@ -193,10 +200,10 @@
 				}
 			}
 			if (!valid) {
-				document.getElementById("gerrymandered").textContent = "Please create valid districts";
+				document.getElementById('gerrymandered').textContent = 'Please create valid districts';
 			} else {
 				let sum = 0;
-				for (const color_ of ["red", "orange", "yellow", "green", "blue"]) {
+				for (const color_ of ['red', 'orange', 'yellow', 'green', 'blue']) {
 					let sum_ = 0;
 					for (let row = 0; row < height; row++) {
 						for (let column = 0; column < width; column++) {
@@ -206,8 +213,10 @@
 					}
 					if (sum_ / (height * width / 5) > 0.5)
 						sum += 1;
+					if (sum_ / (height * width / 5) == 0.5)
+						sum += 0.5;
 				}
-				document.getElementById("gerrymandered").textContent = Math.floor(sum / 5 * 100).toString() + "%";
+				document.getElementById('gerrymandered').textContent = Math.floor(sum / 5 * 100).toString() + '%';
 			}
 		}
 
@@ -268,8 +277,9 @@
 				}
 			}
 		}
-		document.getElementById("popular").textContent = Math.floor((num_cats / (num_cats + num_dogs)) * 100) + "%";
+		document.getElementById('popular').textContent = Math.floor((num_cats / (num_cats + num_dogs)) * 100) + '%';
 		update_borders();
+		set_global_color('red');
 	</script>
 </body>
 
